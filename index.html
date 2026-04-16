@@ -469,7 +469,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCNTpriuK_d-yO83Q9LsWQIlUnZQ5t8gyA",
+  apiKey: "YOUR_KEY",
   authDomain: "islamic-routine-tracker.firebaseapp.com",
   projectId: "islamic-routine-tracker",
   storageBucket: "islamic-routine-tracker.firebasestorage.app",
@@ -483,30 +483,38 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const db = getFirestore(app);
 
-getRedirectResult(auth).catch((error) => {
-  console.error("Redirect sign-in error:", error);
-  alert(error.message);
-});
-
 window.currentUser = null;
 window.cloudChecks = {};
 window.unsubscribeTracker = null;
 
-function getTrackerRef(uid) {
-  return doc(db, "users", uid, "tracker", "main");
-}
+getRedirectResult(auth)
+  .then((result) => {
+    if (result && result.user) {
+      console.log("Redirect login success:", result.user.email);
+    }
+  })
+  .catch((error) => {
+    console.error("Redirect sign-in error:", error);
+    alert("Login failed: " + error.message);
+  });
 
 window.loginUser = async function () {
+  const btn = document.querySelector(".overlay-google-btn");
+  if (btn) btn.disabled = true;
+
   try {
     const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 
     if (isMobile) {
       await signInWithRedirect(auth, provider);
+      return;
     } else {
       await signInWithPopup(auth, provider);
     }
   } catch (error) {
-    alert(error.message);
+    console.error(error);
+    alert("Login failed: " + error.message);
+    if (btn) btn.disabled = false;
   }
 };
 
